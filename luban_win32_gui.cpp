@@ -2028,6 +2028,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
   mainClass.lpfnWndProc = MainProc;
   mainClass.hInstance = hInstance;
   mainClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+  mainClass.hIcon = LoadIconW(hInstance, L"LUBAN_ICON");
   mainClass.hbrBackground = g_windowBrush;
   mainClass.lpszClassName = L"LubanWin32Gui";
   RegisterClassW(&mainClass);
