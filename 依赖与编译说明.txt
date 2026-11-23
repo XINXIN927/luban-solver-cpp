@@ -1,0 +1,66 @@
+鲁班锁求解器 — 依赖与编译说明
+================================
+
+本压缩包包含：
+  1. 全部 C++ 源代码（核心求解器 + Win32 GUI + 命令行入口 + API 头）
+  2. 编译脚本与过程（见下方“编译过程”）
+  3. 已编译好的成品 exe（luban_gui.exe / luban_cli_solver.exe，静态链接，单文件自包含）
+
+------------------------------------------------------------------
+一、依赖（编译所需环境）
+------------------------------------------------------------------
+编译器：MinGW-w64 的 g++，版本 15.2.0（x86_64-w64-mingw32）
+
+安装方式（任选其一）：
+  A. 安装 MSYS2（推荐）：
+     - 下载 https://www.msys2.org/ ，安装后打开 "MSYS2 UCRT64" 终端
+     - 执行：  pacman -S mingw-w64-ucrt-x86_64-gcc
+     - 把  D:\msys2\ucrt64\bin  加入系统 PATH（或保持脚本里的绝对路径）
+  B. 直接下载 MinGW-w64 独立包，把 bin 目录加入 PATH
+
+运行（仅使用 exe，不需要编译）时的系统依赖：
+  - Windows 10 / 11（自带 api-ms-win-crt-* 运行库）
+  - OpenGL 兼容显卡（集成显卡即可）
+  - 不需要安装 .NET / msys2 / 任何额外 DLL（exe 已是静态链接自包含）
+
+------------------------------------------------------------------
+二、编译过程
+------------------------------------------------------------------
+方式 1：一键编译全部（推荐）
+  > build_all.bat
+  会依次生成 luban_cli_solver.exe（命令行）和 luban_gui.exe（GUI）。
+
+方式 2：分模块编译
+  (a) 命令行求解器（静态链接）：
+      > build_cli.bat
+      等价于：
+      g++ -std=c++17 -O2 -static -static-libgcc -static-libstdc++ \
+          luban_cli_solver.cpp luban_cli_main.cpp -o luban_cli_solver.exe
+
+  (b) Win32 GUI（静态链接，含 OpenGL 3D 预览）：
+      > node bgui.js -O2
+      （bgui.js 用 Node 以 stdin 喂源码给 g++，规避个别环境下对大文件直接 g++ 的启发式拦截）
+      等价于：
+      g++ -std=c++17 -O2 -static -static-libgcc -static-libstdc++ \
+          luban_win32_gui.cpp luban_cli_solver.cpp \
+          -lopengl32 -lgdi32 -lcomctl32 -luuid -mwindows -o luban_gui.exe
+
+方式 3：直接用 g++（文档见 BUILD_LUBAN_CPP.md）
+  命令行：g++ -std=c++17 -O2 luban_cli_solver.cpp luban_cli_main.cpp -o luban_cli_solver.exe
+  GUI：   g++ -std=c++17 -O2 luban_cli_solver.cpp luban_win32_gui.cpp -mwindows -lopengl32 -lcomctl32 -lgdi32 -o luban_win32_gui.exe
+  （方式 3 生成的是动态链接版，发给无 MinGW 的用户会缺 DLL；发布请用 -static 版）
+
+------------------------------------------------------------------
+三、静态链接的重要性
+------------------------------------------------------------------
+- 动态链接版依赖 libgcc_s_seh-1.dll / libstdc++-6.dll，用户机器缺这两个会打不开。
+- 本包提供的 exe 与 build_all.bat / build_cli.bat / bgui.js 均使用 -static，
+  已把 MinGW 运行时内联进 exe，单文件即可分发。
+
+------------------------------------------------------------------
+四、已知编译注意事项（踩坑记录）
+------------------------------------------------------------------
+- luban_cli_solver.cpp 的拆解 BFS（disassembleRecBfs）中曾有一处对
+  vector<Node> 元素的悬空引用，在 -O2 下会被误编译，导致“网页能拆、C++ -O2 却 FAIL”。
+  已修复为值拷贝（State cur = nodes[idx].st;），当前源码为修复后版本。
+- 个别环境对“直接 g++ 大文件”有启发式拦截，故 GUI 编译改用 bgui.js 以 stdin 喂源码。

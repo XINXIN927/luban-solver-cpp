@@ -1,0 +1,39 @@
+# Compiled object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Executables
+*.exe
+*.app
+
+# Libraries
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Debug / linker
+*.pdb
+*.ilk
+*.exp
+*.gch
+*.pch
+
+# Build directories
+[Bb]uild/
+[Bb]uild-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Temporary
+*.tmp
+*.log
+*.bak
+*.swp
+.cache/
